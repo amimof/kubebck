@@ -19,12 +19,12 @@ KUBECONFIG="${KUBECONFIG:-"/config"}"
 export KUBECONFIG=$KUBECONFIG
 CONTEXTS=$(kubectl config get-contexts --no-headers -o name)
 CONTEXTS_COUNT=$(echo $CONTEXTS | wc -w)
-OUTPUT_DIR="${OUTPUT_DIR:-"/kubebck"}"
-OUTPUT_FORMAT="${OUTPUT_FORMAT:-"yaml"}"
+KUBEBCK_OUTPUT_DIR="${KUBEBCK_OUTPUT_DIR:-"/kubebck"}"
+KUBEBCK_OUTPUT_FORMAT="${KUBEBCK_OUTPUT_FORMAT:-"yaml"}"
 KUBEBCK_ARCHIVE="${KUBEBCK_ARCHIVE:-"false"}"
 
 # Print out some informative info
-info "Output path is: ${OUTPUT_DIR}"
+info "Output path is: ${KUBEBCK_OUTPUT_DIR}"
 info "KUBECONFIG=${KUBECONFIG}"
 info "Contexts in kubeconfig: ${CONTEXTS_COUNT}"
 
@@ -32,7 +32,7 @@ for CONTEXT in $CONTEXTS; do
 
   info "Begin exporting ${CONTEXT}"
 
-  CONTEXT_OUTPUT_DIR="${OUTPUT_DIR}/${CONTEXT}/${DATE}"
+  CONTEXT_OUTPUT_DIR="${KUBEBCK_OUTPUT_DIR}/${CONTEXT}/${DATE}"
   info "Context output path is ${CONTEXT_OUTPUT_DIR}"
   mkdir -p $CONTEXT_OUTPUT_DIR
   info "Using context ${CONTEXT}"
@@ -61,28 +61,29 @@ for CONTEXT in $CONTEXTS; do
   set +e
   for API in $GLOBAL_APIS; do
     info "/${CONTEXT}/${API}"
-    FILE_NAME="${CONTEXT_OUTPUT_DIR}/${API}.${OUTPUT_FORMAT}"
-    kubectl get $API --no-headers --ignore-not-found -o $OUTPUT_FORMAT > $FILE_NAME
+    FILE_NAME="${CONTEXT_OUTPUT_DIR}/${API}.${KUBEBCK_OUTPUT_FORMAT}"
+    kubectl get $API --no-headers --ignore-not-found -o $KUBEBCK_OUTPUT_FORMAT > $FILE_NAME
   done
 
   # Export namespaced resources
   info "Begin exporting namespaced APIs\n"
   for NAMESPACE in $NAMESPACES; do
     for API in $SCOPED_APIS; do
-      info "${CONTEXT}/${NAMESPACE}/${API}"
+      info "/${CONTEXT}/${NAMESPACE}/${API}"
       NAMESPACE_OUTPUT_DIR="${CONTEXT_OUTPUT_DIR}/namespaces/${NAMESPACE}"
       mkdir -p $NAMESPACE_OUTPUT_DIR
-      FILE_NAME="${NAMESPACE_OUTPUT_DIR}/${API}.${OUTPUT_FORMAT}"
-      kubectl get $API -n ${NAMESPACE} --no-headers --ignore-not-found -o $OUTPUT_FORMAT > $FILE_NAME
+      FILE_NAME="${NAMESPACE_OUTPUT_DIR}/${API}.${KUBEBCK_OUTPUT_FORMAT}"
+      kubectl get $API -n ${NAMESPACE} --no-headers --ignore-not-found -o $KUBEBCK_OUTPUT_FORMAT > $FILE_NAME
     done
   done
 
   # Tar context output dir if desired
   if [ "$KUBEBCK_ARCHIVE" == "true" ]; then
-    ARCHIVE_FILE_NAME="${OUTPUT_DIR}/${CONTEXT}/${CONTEXT}_${DATE}.tar.gz"
-    info "Creating archive ${ARCHIVE_FILE_NAME}"
-    tar -zcf "${ARCHIVE_FILE_NAME}" "${CONTEXT_OUTPUT_DIR}"
-    chmod +x ${ARCHIVE_FILE_NAME}
+    ARCHIVE_FILE_NAME="${CONTEXT}_${DATE}.tar.gz"
+    info "Creating archive ${KUBEBCK_OUTPUT_DIR}/${CONTEXT}/${ARCHIVE_FILE_NAME}"
+    cd "${CONTEXT_OUTPUT_DIR}" && tar -zcf "../${ARCHIVE_FILE_NAME}" ./*
+    chmod +x "../${ARCHIVE_FILE_NAME}"
+    cd - > /dev/null
     rm -r "${CONTEXT_OUTPUT_DIR}"
   fi
 
