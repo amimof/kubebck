@@ -41,5 +41,14 @@ This example will connect to the Kubernetes clusters using the contexts defined 
     ...
 ```
 
+# Options
+There are a few options you may set using environment variables if the default values do not apply for you. 
+
+| Name 	| Default 	| Description 	|
+|-------------------------	|--------------------------------------	|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------	|
+| `KUBEBCK_OUTPUT_DIR` 	| `/kubebck` 	| A path to the root directory in which the exported data will be stored. |
+| `KUBEBCK_OUTOUT_FORMAT` 	| `yaml` 	| Output format of the exported files. Can be either `yaml` or `json`. |
+| `KUBEBCK_ARCHIVE` 	| `false` 	| If set tot `true`, exported data will be added to a `tar` archive and the original exported data will be remove. |
+
 # Contribute
 All help in any form is highly appreciated and your are welcome participate in developing together. To contribute submit a Pull Request. If you want to provide feedback, open up a Github Issue or contact me personally.
