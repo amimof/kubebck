@@ -14,18 +14,19 @@ function error {
 }
 
 # Set some variables to be used later on
-DATE=`date "+%F"`
+DATE=`date "+%F_%H%M"`
 KUBECONFIG="${KUBECONFIG:-"/config"}"
 export KUBECONFIG=$KUBECONFIG
 CONTEXTS=$(kubectl config get-contexts --no-headers -o name)
 CONTEXTS_COUNT=$(echo $CONTEXTS | wc -w)
 OUTPUT_DIR="${OUTPUT_DIR:-"/kubebck"}"
 OUTPUT_FORMAT="${OUTPUT_FORMAT:-"yaml"}"
+KUBEBCK_ARCHIVE="${KUBEBCK_ARCHIVE:-"false"}"
 
 # Print out some informative info
 info "Output path is: ${OUTPUT_DIR}"
+info "KUBECONFIG=${KUBECONFIG}"
 info "Contexts in kubeconfig: ${CONTEXTS_COUNT}"
-
 
 for CONTEXT in $CONTEXTS; do 
 
@@ -75,6 +76,15 @@ for CONTEXT in $CONTEXTS; do
       kubectl get $API -n ${NAMESPACE} --no-headers --ignore-not-found -o $OUTPUT_FORMAT > $FILE_NAME
     done
   done
+
+  # Tar context output dir if desired
+  if [ "$KUBEBCK_ARCHIVE" == "true" ]; then
+    ARCHIVE_FILE_NAME="${OUTPUT_DIR}/${CONTEXT}/${CONTEXT}_${DATE}.tar.gz"
+    info "Creating archive ${ARCHIVE_FILE_NAME}"
+    tar -zcf "${ARCHIVE_FILE_NAME}" "${CONTEXT_OUTPUT_DIR}"
+    chmod +x ${ARCHIVE_FILE_NAME}
+    rm -r "${CONTEXT_OUTPUT_DIR}"
+  fi
 
   info "Done exporting ${CONTEXT}"
 

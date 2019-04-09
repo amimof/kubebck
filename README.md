@@ -9,8 +9,8 @@ The easiest and best way of running kubebck is by using `Docker`. You need to pr
 ```
 docker run \
   -d --privileged \
-  -v /var/lib/kubebck/data/:/kubebck 
-  -v /var/lib/kubebck/config:/config 
+  -v /var/lib/kubebck/data/:/kubebck \
+  -v /var/lib/kubebck/config:/config \
   amimof/kubebck:latest
 ```
 This example will connect to the Kubernetes clusters using the contexts defined in the provided kubeconfig file and store exported data to `/var/lib/kubebck/data` on the container host. After the kubebck container is finished backing up all clusters, the container will terminate and the content of the output directory will look something like this.
